@@ -8,7 +8,7 @@ Python CLI tool (`yeti_calibration.py`) that runs 5 test phases to calibrate a B
 - **Microphone**: Blue Yeti USB
 - **Python**: System python3 with `pip install --break-system-packages`
 - **FFmpeg**: Via `brew install ffmpeg`
-- **Meeting recordings**: `/media/storage/4TBSSD/granularSync/` (4TB SSD, `.opus` files)
+- **Meeting recordings**: `/Volumes/4TBSSD/granularSync/` (4TB SSD, `.opus` files)
 
 ## Key Commands
 ```bash
@@ -68,7 +68,7 @@ See `docs/implementation_plan.md` for the task-by-task implementation plan with 
 | Music level | < 25% of voice energy |
 
 ## Conventions
-- Python 3.10+ idioms
+- Python 3.9+ (uses `from __future__ import annotations` for modern type hints)
 - Type hints on public functions
 - Docstrings on modules and classes
 - ANSI color output for terminal UX

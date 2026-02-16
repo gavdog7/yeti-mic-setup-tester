@@ -17,3 +17,8 @@ venv/
 # IDE
 .vscode/
 .idea/
+
+# Calibration output
+recordings/
+reports/
+yeti_calibration_results.json

@@ -11,13 +11,13 @@
 ## Phase A: Foundation & Core Utilities
 
 ### Task 1: Project scaffolding and dependencies
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Create directory structure, install dependencies, verify environment (Python, ffmpeg, sounddevice can see Yeti).
 - **Acceptance**: All imports succeed. `sounddevice.query_devices()` runs. `ffmpeg -version` returns. Directory tree exists.
 - **Evidence**: —
 
 ### Task 2: Audio analyzer module (`audio_analyzer.py`)
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement core analysis functions:
   - `calc_rms_dbfs(signal)` — RMS in dBFS
   - `calc_peak_dbfs(signal)` — Peak in dBFS
@@ -29,7 +29,7 @@
 - **Evidence**: —
 
 ### Task 3: Speaker playback module (`speaker_playback.py`)
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement:
   - `find_meeting_file()` — discover `.opus` files from granularSync, filter >5MB, sort by mtime
   - `convert_to_wav(opus_path)` — ffmpeg conversion to `/tmp/calibration_meeting.wav`
@@ -45,7 +45,7 @@
 ## Phase B: Recording & Test Phases
 
 ### Task 4: Recording infrastructure
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement in `yeti_calibration.py`:
   - `select_yeti_device()` — auto-detect Blue Yeti, fallback to user selection
   - `record_phase(duration, device_index, label)` — record WAV, save to `recordings/run_XXX/`, return numpy array + filepath
@@ -55,7 +55,7 @@
 - **Evidence**: —
 
 ### Task 5: Terminal UX utilities
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement:
   - ANSI color helpers (red, green, yellow, cyan, bold)
   - Countdown timer ("3... 2... 1... RECORDING")
@@ -66,7 +66,7 @@
 - **Evidence**: —
 
 ### Task 6: Implement 5 test phases
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement each phase in `yeti_calibration.py`:
   - Phase 1: Silence Baseline (10s) — record silence, measure noise floor
   - Phase 2: Voice Only (15s) — display reading passage, record, measure voice levels
@@ -85,7 +85,7 @@
 ## Phase C: Analysis & Reporting
 
 ### Task 7: Report generator module (`report_generator.py`)
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement:
   - `generate_measurements_table(results)` — RMS, Peak, SNR, Dominant Freq Band per phase
   - `generate_recommendations(results)` — apply recommendation logic table from spec
@@ -98,7 +98,7 @@
 - **Evidence**: —
 
 ### Task 8: Recommendation engine
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Implement the full recommendation logic table:
   - Noise floor assessment (gain too high / conservative)
   - Voice SNR assessment (too quiet / excellent)
@@ -115,7 +115,7 @@
 ## Phase D: Iterative Loop & Final Config
 
 ### Task 9: Iterative re-run loop
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: After each run, prompt user:
   ```
   [A] Run ALL phases again
@@ -129,7 +129,7 @@
 - **Evidence**: —
 
 ### Task 10: Final config export and success criteria check
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**:
   - Check all success criteria (noise floor, voice SNR, TV SNR, dominance, clipping, music level)
   - If all pass → print green "✅ CALIBRATION COMPLETE"
@@ -146,7 +146,7 @@
 ## Phase E: Polish & Documentation
 
 ### Task 11: Error handling and edge cases
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**:
   - Yeti not connected → clear error message
   - No `.opus` files found → graceful fallback / message
@@ -158,7 +158,7 @@
 - **Evidence**: —
 
 ### Task 12: README and final documentation
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Description**: Create README.md with:
   - Quick start guide
   - Prerequisites
