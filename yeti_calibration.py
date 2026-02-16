@@ -707,10 +707,11 @@ def run_iterative_menu(
         print_separator()
         print(bold("  What would you like to do?"))
         print()
-        print(f"  {cyan('[A]')} Run ALL phases again")
-        print(f"  {cyan('[V]')} Re-run Voice Only (Phase 2) — quick gain check")
-        print(f"  {cyan('[S]')} Re-run TV Speakers Only (Phase 3) — pattern check")
+        print(f"  {cyan('[T]')} Re-test Voice + TV (quick — the two key measurements)")
+        print(f"  {cyan('[V]')} Re-run Voice Only (Phase 2)")
+        print(f"  {cyan('[S]')} Re-run TV Speakers Only (Phase 3)")
         print(f"  {cyan('[M]')} Re-run Music Isolation (Phase 5) — Sonos volume check")
+        print(f"  {cyan('[A]')} Run ALL phases (full suite)")
         print(f"  {cyan('[Q]')} Quit — happy with settings")
         print()
 
@@ -723,14 +724,18 @@ def run_iterative_menu(
         run_number += 1
         run_dir = os.path.join(RECORDINGS_DIR, f"run_{run_number:03d}")
 
-        if choice == "A":
-            run_all_phases(device_index, run_dir, results, meeting_wav)
+        if choice == "T":
+            run_quick_voice_tv(device_index, run_dir, results, meeting_wav)
         elif choice == "V":
             run_phase2(device_index, run_dir, results)
+            _infer_dominance(results)
         elif choice == "S":
             run_phase3(device_index, run_dir, results, meeting_wav)
+            _infer_dominance(results)
         elif choice == "M":
             run_phase5(device_index, run_dir, results, meeting_wav)
+        elif choice == "A":
+            run_all_phases(device_index, run_dir, results, meeting_wav)
         else:
             print(yellow("  Invalid choice. Please try again."))
             run_number -= 1
@@ -752,16 +757,89 @@ def run_iterative_menu(
     return results, run_number
 
 
+def run_core_phases(
+    device_index: int,
+    run_dir: str,
+    results: dict[str, Any],
+    meeting_wav: str | None,
+) -> None:
+    """Run the core test phases: Silence, Voice, TV.
+
+    Dominance is inferred from Phase 2 (voice) vs Phase 3 (TV) directly,
+    without needing a separate combined Phase 4 recording.
+    """
+    run_phase1(device_index, run_dir, results)
+    run_phase2(device_index, run_dir, results)
+    run_phase3(device_index, run_dir, results, meeting_wav)
+
+    # Infer voice dominance from Phase 2 vs Phase 3
+    _infer_dominance(results)
+
+
+def run_quick_voice_tv(
+    device_index: int,
+    run_dir: str,
+    results: dict[str, Any],
+    meeting_wav: str | None,
+) -> None:
+    """Quick re-test: just Voice (Phase 2) and TV (Phase 3).
+
+    Reuses the existing noise floor from Phase 1.
+    """
+    run_phase2(device_index, run_dir, results)
+    run_phase3(device_index, run_dir, results, meeting_wav)
+    _infer_dominance(results)
+
+
+def _infer_dominance(results: dict[str, Any]) -> None:
+    """Calculate voice dominance ratio from Phase 2 and Phase 3 results.
+
+    Compares voice-only RMS to TV-only RMS to estimate how much louder
+    the voice is than the TV speakers in the recording.
+    """
+    p2 = results.get("phase2", {})
+    p3 = results.get("phase3", {})
+    if not p2 or not p3:
+        return
+
+    voice_rms_linear = 10 ** (p2.get("rms_dbfs", -96.0) / 20.0)
+    tv_rms_linear = 10 ** (p3.get("rms_dbfs", -96.0) / 20.0)
+    dominance = voice_rms_linear / tv_rms_linear if tv_rms_linear > 0 else 0.0
+
+    # Store in phase4 slot so the report generator and success criteria work
+    results["phase4"] = {
+        "rms_dbfs": p2.get("rms_dbfs", -96.0),
+        "peak_dbfs": p2.get("peak_dbfs", -96.0),
+        "snr_db": p2.get("snr_db", 0.0),
+        "dominant_band": p2.get("dominant_band", "—"),
+        "speech_band_ratio": p2.get("speech_band_ratio", 0.0),
+        "voice_dominance_ratio": dominance,
+        "inferred": True,
+    }
+
+    print()
+    print_separator()
+    print(f"  Voice dominance (inferred): {bold(f'{dominance:.1f}x')} voice over TV")
+    if dominance < 1.5:
+        print(yellow("  >>> Voice not dominant enough over TV audio."))
+    elif dominance > 10:
+        print(yellow("  >>> TV too quiet relative to voice."))
+    elif 2.0 <= dominance <= 5.0:
+        print(green("  >>> Good voice/TV balance."))
+    print()
+
+
 def run_all_phases(
     device_index: int,
     run_dir: str,
     results: dict[str, Any],
     meeting_wav: str | None,
 ) -> None:
-    """Run all 5 test phases."""
+    """Run all 5 test phases (full suite)."""
     run_phase1(device_index, run_dir, results)
     run_phase2(device_index, run_dir, results)
     run_phase3(device_index, run_dir, results, meeting_wav)
+    _infer_dominance(results)
     run_phase4(device_index, run_dir, results, meeting_wav)
     run_phase5(device_index, run_dir, results, meeting_wav)
 
@@ -843,13 +921,13 @@ def main() -> None:
     print_separator()
     meeting_wav = setup_meeting_file()
 
-    # ── Run all phases ──
+    # ── Run core phases (Silence + Voice + TV) ──
     run_number = get_next_run_number()
     run_dir = os.path.join(RECORDINGS_DIR, f"run_{run_number:03d}")
     results: dict[str, Any] = {}
 
     try:
-        run_all_phases(device_index, run_dir, results, meeting_wav)
+        run_core_phases(device_index, run_dir, results, meeting_wav)
     except KeyboardInterrupt:
         print()
         print(yellow("\n  Recording interrupted. Saving partial results..."))
