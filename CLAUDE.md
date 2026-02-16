@@ -37,6 +37,16 @@ yeti_calibration/
 └── yeti_calibration_results.json  # Accumulated results across runs
 ```
 
+## Blue Yeti Hardware Controls
+The calibration tool must be aware of all user-configurable controls on the Yeti and guide the user through adjusting them between runs. See `docs/instructions.md` for the full control matrix.
+
+- **Gain knob** (rear, top): Analog preamp sensitivity, 0–100% (CCW=min, CW=max). Primary recording level control. Start at ~25–35% for voice at 6–12".
+- **Pattern selector** (rear, bottom): 4 positions — Cardioid (default, best voice isolation), Omnidirectional (if TV too quiet), Bidirectional (mic between user and TV), Stereo (not recommended for this workflow).
+- **Mute button** (front, top): Must be unmuted (LED off) to record.
+- **Headphone volume** (front, bottom): Monitor-only, does NOT affect recording levels. Tool should warn users not to confuse this with gain.
+- **macOS input volume** (System Settings > Sound > Input): Digital input level. Set to ~80% as stable baseline; use hardware gain knob for fine-tuning. Tool should verify this at startup.
+- **macOS output device**: Must NOT be Yeti during Phases 3–5 to avoid feedback loops. Tool should verify at startup.
+
 ## Architecture Decisions
 - **Recording**: `sounddevice.rec()` at 48kHz, 16-bit, mono
 - **Playback**: `subprocess.Popen(['afplay', filepath])` for system speakers — never route through Yeti
